@@ -63,6 +63,7 @@ def add_survey
         puts "Add another answer? (Y/N)"
         a_choice = gets.chomp.upcase
       end
+      question.answers.create({text: "Other"})
     else
       answer = question.answers.create({text: ""})
     end
@@ -87,11 +88,16 @@ def take_survey
         question.answers.each {|answer| puts "#{answer.id}: #{answer.text}"}
         puts "Select answer id:"
         answer = Answer.find(gets.chomp.to_i)
-        answer.responses.create
+        if answer.text == "Other"
+          puts "Please enter your response:"
+          answer.responses.create({:text => gets.chomp})
+        else
+          answer.responses.create
+        end
       elsif (question.q_type == 3)
         puts "Please enter answer:"
         answer = question.answers.first
-        answer.update({text: gets.chomp})
+        answer.responses.create({text: gets.chomp})
       end
       if (question.q_type == 2)
         puts "Add another answer? (Y/N)"
@@ -115,15 +121,21 @@ def survey_stats
     puts "\n"
     puts "For Question \##{question.id}: #{question.text}"
     if question.q_type == 3
-      puts question.answers.first.text
+      answer = question.answers.first
+      answer.responses.each {|response| puts response.text}
     else
-      stats = question.response_stats
-      total = question.total(stats)
-      percentages = question.percentage(stats,total)
-      question.answers.each do |answer|
-        puts "  #{answer.id.to_s}: #{answer.text}"
-        puts "    Number : #{stats.shift.to_s}"
-        puts "    Percent: #{percentages.shift.to_s}%"
+      if question.answers.first.text == "Other"
+        answer = question.answers.first
+        answer.responses.each {|response| puts response.text}
+      else
+        stats = question.response_stats
+        total = question.total(stats)
+        percentages = question.percentage(stats,total)
+        question.answers.each do |answer|
+          puts "  #{answer.id.to_s}: #{answer.text}"
+          puts "    Number : #{stats.shift.to_s}"
+          puts "    Percent: #{percentages.shift.to_s}%"
+        end
       end
     end
   end
