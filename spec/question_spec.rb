@@ -17,4 +17,12 @@ describe 'Question' do
     question1 = survey1.questions.create({:text => "Black or Red?"})
     expect(question1.survey_id).to eq survey1.id
   end
+  it 'has many responses (via answers)' do
+    question1 = Question.create({:text => "Black or Red?"})
+    answer1 = question1.answers.create({:text => "Black"})
+    answer2 = question1.answers.create({:text => "Red"})
+    response1 = answer1.responses.create
+    response2 = answer2.responses.create
+    expect(question1.responses).to eq [response1, response2]
+  end
 end
