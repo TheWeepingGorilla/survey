@@ -46,18 +46,26 @@ def add_survey
   new_survey_name = gets.chomp
   new_survey = Survey.create({:name => new_survey_name})
   until choice == 'N'
+    puts "1) Multiple Choice"
+    puts "2) Multiple Selection"
+    puts "3) Open-ended\n"
+    puts "Enter question type ID:"
+    q_type = gets.chomp.to_i
     puts "Enter question:"
     q_text = gets.chomp.capitalize
-    question = new_survey.questions.create({text: q_text})
-    a_choice = ""
-    until a_choice == "N"
-      puts "Enter a potential answer:"
-      a_text = gets.chomp.capitalize
-      answer = question.answers.create({text: a_text})
-      puts "Add another answer? (Y/N)"
-      a_choice = gets.chomp.upcase
+    question = new_survey.questions.create({text: q_text, q_type: q_type})
+    if q_type == 1 || q_type == 2
+      a_choice = ""
+      until a_choice == "N"
+        puts "Enter a potential answer:"
+        a_text = gets.chomp.capitalize
+        answer = question.answers.create({text: a_text})
+        puts "Add another answer? (Y/N)"
+        a_choice = gets.chomp.upcase
+      end
+    else
+      answer = question.answers.create({text: ""})
     end
-
     puts "Add another question? (Y/N)"
     choice = gets.chomp.upcase
   end
@@ -73,10 +81,25 @@ def take_survey
   survey = Survey.find(choice)
   survey.questions.each do |question|
     puts question.text
-    question.answers.each {|answer| puts "#{answer.id}: #{answer.text}"}
-    puts "Select answer id:"
-    answer = Answer.find(gets.chomp.to_i)
-    answer.responses.create
+    choice_x = ""
+    until (choice_x == "N")
+      if (question.q_type == 1) || (question.q_type == 2)
+        question.answers.each {|answer| puts "#{answer.id}: #{answer.text}"}
+        puts "Select answer id:"
+        answer = Answer.find(gets.chomp.to_i)
+        answer.responses.create
+      elsif (question.q_type == 3)
+        puts "Please enter answer:"
+        answer = question.answers.first
+        answer.update({text: gets.chomp})
+      end
+      if (question.q_type == 2)
+        puts "Add another answer? (Y/N)"
+        choice_x = gets.chomp.upcase
+      else
+        choice_x = "N"
+      end
+    end
   end
   puts "Thanks for taking the survey!"
   puts "High Five! Press RETURN to continue..."
@@ -91,13 +114,17 @@ def survey_stats
   survey.questions.each do |question|
     puts "\n"
     puts "For Question \##{question.id}: #{question.text}"
-    stats = question.response_stats
-    total = question.total(stats)
-    percentages = question.percentage(stats,total)
-    question.answers.each do |answer|
-      puts "  #{answer.id.to_s}: #{answer.text}"
-      puts "    Number : #{stats.shift.to_s}"
-      puts "    Percent: #{percentages.shift.to_s}%"
+    if question.q_type == 3
+      puts question.answers.first.text
+    else
+      stats = question.response_stats
+      total = question.total(stats)
+      percentages = question.percentage(stats,total)
+      question.answers.each do |answer|
+        puts "  #{answer.id.to_s}: #{answer.text}"
+        puts "    Number : #{stats.shift.to_s}"
+        puts "    Percent: #{percentages.shift.to_s}%"
+      end
     end
   end
   puts "\n"
