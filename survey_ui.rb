@@ -64,16 +64,34 @@ def add_survey
   puts "Survey #{new_survey.name} has been created."
   puts "High Five! Press RETURN to continue..."
   gets
-  main_menu
 end
 
 def take_survey
+  list_surveys
+  puts "Choose survey id to take that survey:"
+  choice = gets.chomp.to_i
+  survey = Survey.find(choice)
+  survey.questions.each do |question|
+    puts question.text
+    question.answers.each {|answer| puts "#{answer.id}: #{answer.text}"}
+    puts "Select answer id:"
+    answer = Answer.find(gets.chomp.to_i)
+    answer.responses.create
+  end
+  puts "Thanks for taking the survey!"
+  puts "High Five! Press RETURN to continue..."
+  gets
 end
 
 def survey_stats
 end
 
 def list_surveys
+  puts "Survey List:"
+  Survey.all.each do |survey|
+    puts "#{survey.id} : #{survey.name}"
+  end
+  puts "\n"
 end
 
 main_menu
