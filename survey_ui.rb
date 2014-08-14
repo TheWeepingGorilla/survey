@@ -84,6 +84,25 @@ def take_survey
 end
 
 def survey_stats
+  list_surveys
+  puts "What survey would you like to see stats for?"
+  choice = gets.chomp.to_i
+  survey = Survey.find(choice)
+  survey.questions.each do |question|
+    puts "\n"
+    puts "For Question \##{question.id}: #{question.text}"
+    stats = question.response_stats
+    total = question.total(stats)
+    percentages = question.percentage(stats,total)
+    question.answers.each do |answer|
+      puts "  #{answer.id.to_s}: #{answer.text}"
+      puts "    Number : #{stats.shift.to_s}"
+      puts "    Percent: #{percentages.shift.to_s}%"
+    end
+  end
+  puts "\n"
+  puts "High Five! Press RETURN to continue..."
+  gets
 end
 
 def list_surveys
