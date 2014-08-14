@@ -124,17 +124,15 @@ def survey_stats
       answer = question.answers.first
       answer.responses.each {|response| puts response.text}
     else
-      if question.answers.first.text == "Other"
-        answer = question.answers.first
-        answer.responses.each {|response| puts response.text}
-      else
-        stats = question.response_stats
-        total = question.total(stats)
-        percentages = question.percentage(stats,total)
-        question.answers.each do |answer|
-          puts "  #{answer.id.to_s}: #{answer.text}"
-          puts "    Number : #{stats.shift.to_s}"
-          puts "    Percent: #{percentages.shift.to_s}%"
+      stats = question.response_stats
+      total = question.total(stats)
+      percentages = question.percentage(stats,total)
+      question.answers.each do |answer|
+        puts "  #{answer.id.to_s}: #{answer.text}"
+        puts "    Number : #{stats.shift.to_s}"
+        puts "    Percent: #{percentages.shift.to_s}%"
+        if answer.text == "Other"
+          answer.responses.each {|response| puts "      #{response.text}"}
         end
       end
     end
